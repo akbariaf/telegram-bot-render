@@ -4,11 +4,16 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
+    MessageHandler,
+    filters,
+    ConversationHandler,
     ContextTypes,
-    CallbackQueryHandler,
 )
 
 TOKEN = os.getenv("BOT_TOKEN")
+ASK_NAME, ASK_AGE, CONFIRM = range(3)
+user_cache = {}
+
 
 # ==========================
 #  COMMAND HANDLERS
@@ -29,6 +34,53 @@ async def cek(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Ini adalah test command"
     )
+
+async def start_form(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    user_cache[user_id] = {}   # buat memory untuk user ini
+
+    await update.message.reply_text("Silakan masukkan nama Anda:")
+    return ASK_NAME
+    
+async def ask_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    user_cache[user_id]["name"] = update.message.text
+
+    await update.message.reply_text("Berapa umur Anda?")
+    return ASK_AGE
+
+async def confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    text = update.message.text.lower()
+
+    if text == "yes":
+        data = user_cache[user_id]
+        await update.message.reply_text("Data berhasil disimpan sementara di cache! 🙌")
+        print("Data user:", data)  # contoh penyimpanan
+    else:
+        await update.message.reply_text("Form dibatalkan.")
+
+    user_cache.pop(user_id, None)
+    return ConversationHandler.END
+
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    user_cache.pop(user_id, None)
+
+    await update.message.reply_text("Form dibatalkan.")
+    return ConversationHandler.END
+
+form_handler = ConversationHandler(
+    entry_points=[CommandHandler("form", start_form)],
+    states={
+        ASK_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, ask_name)],
+        ASK_AGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, ask_age)],
+        CONFIRM: [MessageHandler(filters.TEXT & ~filters.COMMAND, confirm)],
+    },
+    fallbacks=[CommandHandler("cancel", cancel)],
+)
+
+
 
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -75,6 +127,7 @@ def main():
     app.add_handler(CommandHandler("menu", menu))
     app.add_handler(CommandHandler("cek", cek))
     app.add_handler(CallbackQueryHandler(button_handler))
+    app.add_handler(form_handler)
 
 
     print("Bot berjalan...")
