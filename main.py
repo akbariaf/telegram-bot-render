@@ -8,24 +8,6 @@ from telegram.ext import (
 
 TOKEN = os.getenv("BOT_TOKEN")
 
-
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
-async def menu(update: Update, context):
-    keyboard = [
-        [InlineKeyboardButton("Google", url="https://google.com")],
-        [InlineKeyboardButton("Klik saya", callback_data="klik")]
-    ]
-    await update.message.reply_text(
-        "Pilih tombol:",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-
-app.add_handler(CommandHandler("menu", menu))
-
-
-
-
 # ==========================
 #  COMMAND HANDLERS
 # ==========================
