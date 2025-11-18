@@ -8,6 +8,7 @@ from telegram.ext import (
     filters,
     ConversationHandler,
     ContextTypes,
+    CallbackQueryHandler,
 )
 
 TOKEN = os.getenv("BOT_TOKEN")
