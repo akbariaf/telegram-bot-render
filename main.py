@@ -25,7 +25,7 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Ini adalah bot dengan python-telegram-bot versi 20.x"
     )
 
-async def test(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def cek(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Ini adalah test command"
     )
@@ -73,7 +73,7 @@ def main():
     app.add_handler(CommandHandler("hello", hello))
     app.add_handler(CommandHandler("info", info))
     app.add_handler(CommandHandler("menu", menu))
-    app.add_handler(CommandHandler("test", menu))
+    app.add_handler(CommandHandler("cek", cek))
     app.add_handler(CallbackQueryHandler(button_handler))
 
 
