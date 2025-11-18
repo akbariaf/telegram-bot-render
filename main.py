@@ -1,14 +1,11 @@
 import os
 import logging
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
-    ApplicationBuilder, CommandHandler, CallbackQueryHandler,
-    ContextTypes
+    Updater, CommandHandler, CallbackQueryHandler
 )
 
-# ================================
-# LOGGING
-# ================================
+# Logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -16,97 +13,84 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))  # isi ADMIN_ID di Railway (opsional)
+ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 
-# ================================
-# COMMAND: /start
-# ================================
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# ============================
+# /start
+# ============================
+def start(update, context):
     keyboard = [
         [InlineKeyboardButton("Cek Status Bot", callback_data="status")],
         [InlineKeyboardButton("Menu Lainnya", callback_data="menu_lain")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await update.message.reply_text(
+    update.message.reply_text(
         "Halo! 👋\nBot Telegram sudah online!\nSilakan pilih menu:",
         reply_markup=reply_markup
     )
 
-# ================================
-# COMMAND: /hello
-# ================================
-async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Halo juga! 😄")
+# ============================
+# /hello
+# ============================
+def hello(update, context):
+    update.message.reply_text("Halo juga! 😄")
 
-# ================================
-# COMMAND: /say <text>
-# ================================
-async def say(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# ============================
+# /say <text>
+# ============================
+def say(update, context):
     if len(context.args) == 0:
-        return await update.message.reply_text("Contoh penggunaan:\n/say Halo semuanya!")
-
+        update.message.reply_text("Contoh:\n/say Halo bot!")
+        return
+    
     text = " ".join(context.args)
-    await update.message.reply_text(f"Kamu bilang: {text}")
+    update.message.reply_text(f"Kamu bilang: {text}")
 
-# ================================
-# COMMAND: /admin (hanya untuk admin)
-# ================================
-async def admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# ============================
+# /admin (khusus admin)
+# ============================
+def admin(update, context):
     user_id = update.message.from_user.id
     if user_id != ADMIN_ID:
-        return await update.message.reply_text("❌ Kamu bukan admin.")
+        update.message.reply_text("❌ Kamu bukan admin.")
+        return
+    
+    update.message.reply_text("Halo admin! 😊")
 
-    await update.message.reply_text("Halo admin! Semua aman.")
-
-# ================================
-# CALLBACK BUTTON HANDLER
-# ================================
-async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# ============================
+# Button handler
+# ============================
+def button_handler(update, context):
     query = update.callback_query
-    await query.answer()
-
     data = query.data
 
     if data == "status":
-        await query.edit_message_text("Bot sedang **online & berjalan normal** ✔️")
-    
+        query.edit_message_text("Bot online ✔️")
     elif data == "menu_lain":
-        await query.edit_message_text(
+        query.edit_message_text(
             "Menu lainnya:\n- /hello\n- /say <text>\n- /admin (khusus admin)"
         )
 
-# ================================
-# ERROR HANDLER
-# ================================
-async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.error(msg="Error terjadi:", exc_info=context.error)
-
-    try:
-        if update and update.effective_message:
-            await update.effective_message.reply_text("⚠️ Terjadi error, coba lagi nanti.")
-    except:
-        pass
-
-# ================================
-# MAIN APP
-# ================================
+# ============================
+# Main
+# ============================
 def main():
-    app = ApplicationBuilder().token(TOKEN).build()
+    updater = Updater(TOKEN, use_context=True)
+    dp = updater.dispatcher
 
-    # Daftar command handler
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("hello", hello))
-    app.add_handler(CommandHandler("say", say))
-    app.add_handler(CommandHandler("admin", admin))
+    # Command
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("hello", hello))
+    dp.add_handler(CommandHandler("say", say))
+    dp.add_handler(CommandHandler("admin", admin))
 
-    # Inline button callback
-    app.add_handler(CallbackQueryHandler(button_handler))
+    # Button handler
+    dp.add_handler(CallbackQueryHandler(button_handler))
 
-    # Error handler
-    app.add_error_handler(error_handler)
-
-    app.run_polling()
+    # Mulai polling
+    updater.start_polling()
+    updater.idle()
 
 if __name__ == "__main__":
     main()
