@@ -25,6 +25,11 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Ini adalah bot dengan python-telegram-bot versi 20.x"
     )
 
+async def test(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Ini adalah test command"
+    )
+
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
@@ -68,6 +73,7 @@ def main():
     app.add_handler(CommandHandler("hello", hello))
     app.add_handler(CommandHandler("info", info))
     app.add_handler(CommandHandler("menu", menu))
+    app.add_handler(CommandHandler("test", menu))
     app.add_handler(CallbackQueryHandler(button_handler))
 
 
