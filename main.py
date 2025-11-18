@@ -75,7 +75,7 @@ async def confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if text == "yes":
         data = user_cache[user_id]
         await update.message.reply_text(
-        f"Data berhasil disimpan sementara di cache! 🙌 {name}"
+        f"Data berhasil disimpan sementara di cache! 🙌 {data}"
         )
         print("Data user:", data)  # contoh penyimpanan
     else:
