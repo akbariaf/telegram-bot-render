@@ -49,6 +49,24 @@ async def ask_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Berapa umur Anda?")
     return ASK_AGE
 
+
+async def ask_age(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    user_cache[user_id]["age"] = update.message.text
+
+    name = user_cache[user_id]["name"]
+    age = user_cache[user_id]["age"]
+
+    await update.message.reply_text(
+        f"Periksa kembali data Anda:\n\n"
+        f"Nama : {name}\n"
+        f"Umur : {age}\n\n"
+        f"Ketik **yes** untuk simpan, **no** untuk batalkan."
+    )
+
+    return CONFIRM
+
+
 async def confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     text = update.message.text.lower()
