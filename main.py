@@ -6,6 +6,9 @@ TOKEN = os.getenv("BOT_TOKEN")
 def start(update, context):
     update.message.reply_text("Bot Telegram sudah online di Railway!")
 
+def help(update, context):
+    update.message.reply_text("Kamu butuh bantuan ya ?")
+
 def main():
     updater = Updater(TOKEN, use_context=True)
     dp = updater.dispatcher
